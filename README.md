@@ -1,5 +1,5 @@
 # scary-stuff
-C++ Final Project
+*C++ Final Project*
 
 This project is a final project of my C++ Programming 2 course (University of Bern, 2020). 
 
