@@ -1,9 +1,17 @@
 #include <iostream>
+#include "widget.h"
+#include "opencv2/opencv.hpp"
+#include <QApplication>
 
-using namespace std;
-
-int main()
+int main(int argc, char *argv[])
 {
-    cout << "Hello World!" << endl;
-    return 0;
+    QApplication a(argc, argv);
+
+    Widget w;
+    w.show();
+
+    // OpenCV test
+    cv::Mat Mat;
+
+    return a.exec();
 }

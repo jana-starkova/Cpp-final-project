@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.0)
 
 project(scary-stuff LANGUAGES CXX)
 
@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Declare dependencies
 find_package(Threads REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core SerialPort Network Widgets)
+find_package(Qt5 REQUIRED COMPONENTS Core SerialPort Network Widgets PrintSupport)
+find_package(OpenCV REQUIRED)
 
 # Qt Flags
 # Instruct CMake to run moc automatically when needed
@@ -27,15 +28,16 @@ add_executable(${PROJECT_NAME}
 
 # Set includes
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/app/acquisition
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
     )
 
 
 # Link libs
 if(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core PRIVATE Threads::Threads)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::PrintSupport ${OpenCV_LIBS} Qt5::Core PRIVATE Threads::Threads)
 else(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Core)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::PrintSupport ${OpenCV_LIBS} Qt5::Core)
 endif(UNIX)
 
 # Set compile options, enable warnings
