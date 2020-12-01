@@ -2,6 +2,8 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QScopedPointer>
+#include <QCamera>
 
 namespace Ui {
 class Widget;
@@ -17,6 +19,7 @@ public:
 
 private:
     Ui::Widget *ui;
+
 };
 
 #endif // WIDGET_H

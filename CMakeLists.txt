@@ -4,11 +4,17 @@ project(scary-stuff LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(QT_USE_QTMULTIMEDIA TRUE)
+set(QT_USE_QTMULTIMEDIAWIDGETS TRUE)
 
 # Declare dependencies
 find_package(Threads REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core SerialPort Network Widgets PrintSupport)
+find_package(Qt5 REQUIRED COMPONENTS Core SerialPort Network Widgets Multimedia MultimediaWidgets PrintSupport)
 find_package(OpenCV REQUIRED)
+find_package(Qt5MultimediaWidgets REQUIRED)
+
+
+# QT5_USE_MODULES (${EXECUTABLE_NAME} Multimedia MultimediaWidgets)
 
 # Qt Flags
 # Instruct CMake to run moc automatically when needed
@@ -26,6 +32,9 @@ add_executable(${PROJECT_NAME}
     src/ui/widget.ui
     )
 
+qt5_use_modules(${PROJECT_NAME} multimedia multimediawidgets)
+
+
 # Set includes
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/app/acquisition
@@ -35,9 +44,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 # Link libs
 if(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::PrintSupport ${OpenCV_LIBS} Qt5::Core PRIVATE Threads::Threads)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::MultimediaWidgets Qt5::PrintSupport ${OpenCV_LIBS} Qt5::Core Qt5::Multimedia PRIVATE Threads::Threads)
 else(UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::PrintSupport ${OpenCV_LIBS} Qt5::Core)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::MultimediaWidgets Qt5::PrintSupport ${OpenCV_LIBS} Qt5::Core Qt5::Multimedia)
 endif(UNIX)
 
 # Set compile options, enable warnings

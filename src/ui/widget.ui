@@ -13,6 +13,17 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <widget class="QWidget" name="formLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>19</x>
+     <y>19</y>
+     <width>361</width>
+     <height>261</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="mainLayout"/>
+  </widget>
  </widget>
  <resources/>
  <connections/>
