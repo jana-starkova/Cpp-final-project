@@ -11,12 +11,10 @@ Widget::Widget(QWidget *parent) :
     ui->setupUi(this);
 
     QCamera *camera = new QCamera(this);
-    QVideoWidget* videoWidget = new QVideoWidget();
 
-    ui->mainLayout->addWidget(videoWidget);
-
-    camera->setViewfinder(videoWidget);
+    camera->setViewfinder(ui->testWidget);
     camera->start();
+
 }
 
 Widget::~Widget()
