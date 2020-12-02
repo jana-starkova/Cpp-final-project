@@ -6,7 +6,6 @@
 #include "opencv2/opencv.hpp"
 #include <QMessageBox>
 #include <QCloseEvent>
-#include "camera.h"
 
 namespace Ui {
 class Widget;
@@ -35,7 +34,6 @@ private slots:
 
 private:
     Ui::Widget *ui;
-    Camera* m_camera;
     QGraphicsPixmapItem pixmap;
     cv::VideoCapture video;
 

@@ -28,7 +28,6 @@ Widget::Widget(QWidget *parent) :
 
 Widget::~Widget()
 {
-    delete m_camera;
     delete ui;
 }
 
