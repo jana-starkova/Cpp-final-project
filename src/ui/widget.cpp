@@ -3,6 +3,8 @@
 
 #include <QVideoWidget>
 #include <unistd.h>
+#include <iostream>
+#include <vector>
 
 
 Widget::Widget(QWidget *parent) :
@@ -48,31 +50,60 @@ void Widget::on_btnBrave_toggled(bool checked)
 
 void Widget::displayScaredVid()
 {
+    /**
+     * This function shows the video for very scared users.
+     * The output - spiders walking on the user.
+     *
+     */
+
     using namespace cv;
 
     if(!video.open(0))
         return;
 
-    Mat frame;
+    Mat output;
+    Mat butterflies = imread("butterflies.png", -1);
+
+    // remove the image background
+    Mat mask;
+    std::vector<Mat> rgbLayer;
+
+
+    if(butterflies.channels() == 4)
+    {
+        split(butterflies,rgbLayer);         // seperate channels
+        Mat cs[3] = { rgbLayer[0],rgbLayer[1],rgbLayer[2] };
+        merge(cs,3,butterflies);  // put them together again
+        mask = rgbLayer[3];       // alpha channel used as mask
+    }
+
+
     while(video.isOpened())
     {
-        video >> frame;
+        video >> output;
+
+        // mirror the camera output
+        Mat frame;
+        flip(output, frame, 1);
+
         if(!frame.empty())
         {
-            /*
-            copyMakeBorder(frame,
-                           frame,
-                           frame.rows,
-                           frame.rows,
-                           frame.cols,
-                           frame.cols,
-                           BORDER_REFLECT);*/
+            // copy the image on top of the frame
+            butterflies.copyTo(frame(cv::Rect(0,0,butterflies.cols, butterflies.rows)),mask);
 
             QImage qimg(frame.data,
                         frame.cols,
                         frame.rows,
                         frame.step,
                         QImage::Format_RGB888);
+
+            // add a line to the video
+            /*
+            for (int i=frame.rows/4; i<frame.rows/2; i++){
+                qimg.setPixel(i,i, 0);
+            }
+            */
+
             pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
             ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
         }
@@ -108,7 +139,7 @@ void Widget::displayMidVid()
                         frame.rows,
                         frame.step,
                         QImage::Format_RGB888);
-            pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
+            pixmap.setPixmap( QPixmap::fromImage(qimg) );
             ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
         }
         qApp->processEvents();
@@ -161,6 +192,8 @@ void Widget::on_pushButton_clicked()
     } else if (m_btnBrave){
         ui->selectCheck->setText("A hero! Let's play!");
         displayBraveVid();
+    } else {
+        ui->selectCheck->setText("Please choose an option");
     }
 }
 

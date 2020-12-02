@@ -54,3 +54,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>: -Wall>
     $<$<CXX_COMPILER_ID:MSVC>: /W3>
     )
+
+# Copy necessary files
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/butterflies.png
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
