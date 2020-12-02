@@ -20,34 +20,6 @@
    <string>Scary Project</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="3">
-    <widget class="QVideoWidget" name="testWidget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>400</width>
-       <height>400</height>
-      </size>
-     </property>
-     <property name="sizeIncrement">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="baseSize">
-      <size>
-       <width>1000</width>
-       <height>500</height>
-      </size>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0" rowspan="2">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item alignment="Qt::AlignLeft|Qt::AlignTop">
@@ -59,7 +31,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Dear user&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Welcome and beware. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;They are coming for you. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Are you ready?&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Dear user&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Welcome and beware. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;They are coming for you. &lt;/span&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Are you ready?&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -145,22 +117,22 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignTop">
-      <widget class="QCheckBox" name="checkBox_2">
+     <item>
+      <widget class="QRadioButton" name="btnScared">
        <property name="text">
         <string>Really scared</string>
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignTop">
-      <widget class="QCheckBox" name="checkBox_3">
+     <item>
+      <widget class="QRadioButton" name="btnMid">
        <property name="text">
-        <string>Don't really know</string>
+        <string>Don't know</string>
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignTop">
-      <widget class="QCheckBox" name="checkBox">
+     <item>
+      <widget class="QRadioButton" name="btnBrave">
        <property name="text">
         <string>Ready for some creepy stuff</string>
        </property>
@@ -196,6 +168,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="selectCheck">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -209,6 +188,16 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item row="0" column="2">
+    <widget class="QGraphicsView" name="graphicsView">
+     <property name="minimumSize">
+      <size>
+       <width>400</width>
+       <height>400</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item row="0" column="1">
     <spacer name="verticalSpacer">
@@ -225,14 +214,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QVideoWidget</class>
-   <extends>QWidget</extends>
-   <header>qvideowidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
