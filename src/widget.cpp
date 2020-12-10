@@ -13,6 +13,8 @@
 #include "opencv2/video/background_segm.hpp"
 #include <stdio.h>
 #include <string>
+#include <QMediaPlaylist>
+#include <QMediaPlayer>
 
 
 using namespace cv;
@@ -146,12 +148,15 @@ void Widget::displayMidVid()
 
     // open the video with ghost
     VideoCapture ghost; // = VideoCapture("ghost.gif");
-    ghost.open("ghost.gif");
+    ghost.open("spider.gif");
     int frame_counter = 0;
+    bool going_right = true;
+
     int ghost_pos_x = 20;
     int ghost_pos_y = 20;
     bool ghost_down = true;
     bool ghost_right = true;
+
 
     while(video.isOpened())
     {
@@ -162,15 +167,23 @@ void Widget::displayMidVid()
             // set the ghost gif to an infinity loop
             if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT)){
                 frame_counter = 0;
-                ghost = VideoCapture("ghost.gif");
+                ghost = VideoCapture("spider.gif");
+                going_right = !going_right;
             }
             frame_counter++;
             ghost >> ghost_frame;
 
+            if (!going_right)
+            {
+                Mat flipped;
+                flip(ghost_frame, flipped, 1);
+                ghost_frame = flipped;
+            }
+
             // mask the ghost to remove the background
             Mat gray_ghost;
             cv::cvtColor(ghost_frame, gray_ghost, COLOR_BGR2GRAY);
-            double thresh = 254;
+            double thresh = 180;
             double maxValue = 255; //this is ignored but has to be set
             Mat ghost_masked;
             threshold(gray_ghost,ghost_masked, thresh, maxValue, THRESH_TOZERO_INV);
@@ -181,12 +194,12 @@ void Widget::displayMidVid()
 
             // update the position of the ghost
             if(ghost_right){
-                ghost_pos_x = ghost_pos_x + 2;
+                ghost_pos_x = ghost_pos_x + 1;
                 if (ghost_pos_x > (frame.cols - ghost_frame.cols - 20)){
                     ghost_right = false;
                 }
             } else {
-                ghost_pos_x = ghost_pos_x - 2;
+                ghost_pos_x = ghost_pos_x - 1;
                 if (ghost_pos_x < 20){
                     ghost_right = true;
                 }
@@ -202,6 +215,7 @@ void Widget::displayMidVid()
                     ghost_down = true;
                 }
             }
+
 
             ghost_frame.copyTo(frame(cv::Rect(ghost_pos_x,ghost_pos_y,ghost_frame.cols, ghost_frame.rows)),ghost_masked);
 
@@ -246,6 +260,7 @@ void Widget::displayBraveVid()
     bool ghost_down = true;
     bool ghost_right = true;
 
+    int global_frame_counter = 0;
 
     // create Background Subtractor objects
     //Ptr<BackgroundSubtractor> pBackSub;
@@ -280,12 +295,12 @@ void Widget::displayBraveVid()
 
             // update the position of the ghost
             if(ghost_right){
-                ghost_pos_x = ghost_pos_x + 2;
+                ghost_pos_x = ghost_pos_x + 3;
                 if (ghost_pos_x > (background_.cols - ghost_frame.cols - 20)){
                     ghost_right = false;
                 }
             } else {
-                ghost_pos_x = ghost_pos_x - 2;
+                ghost_pos_x = ghost_pos_x - 3;
                 if (ghost_pos_x < 20){
                     ghost_right = true;
                 }
@@ -302,7 +317,13 @@ void Widget::displayBraveVid()
                 }
             }
 
-            ghost_frame.copyTo(background_(cv::Rect(ghost_pos_x,ghost_pos_y,ghost_frame.cols, ghost_frame.rows)),ghost_masked);
+            // appear ghost
+            if (global_frame_counter > 40)
+            {
+                ghost_frame.copyTo(background_(cv::Rect(ghost_pos_x,ghost_pos_y,ghost_frame.cols, ghost_frame.rows)),ghost_masked);
+
+            }
+
 
             // flip video
             Mat frame;
@@ -341,13 +362,20 @@ void Widget::displayBraveVid()
             Mat frame2;
             dest.copyTo(background_(cv::Rect(0,0,dest.cols, dest.rows)),dest);
 
+            if (global_frame_counter > 30 && global_frame_counter < 40)
+            {
+                if (global_frame_counter % 3 == 0)
+                    background_ = Scalar(0,0,0);
+                if (global_frame_counter % 5 == 0)
+                    background_ = Scalar(255,255,255);
+            }
+
             /*
              * 3 layers
              * background: frame
              * middle: ghosts
              * top: dest
              */
-
 
             // convert Mat to QImage and show
             QImage qimg(background_.data,
@@ -357,6 +385,8 @@ void Widget::displayBraveVid()
                         QImage::Format_RGB888);
             pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
             ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
+
+            global_frame_counter++;
         }
         qApp->processEvents();
     }
