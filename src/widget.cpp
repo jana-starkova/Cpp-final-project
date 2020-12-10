@@ -233,8 +233,18 @@ void Widget::displayBraveVid()
     if(!video.open(0))
         return;
 
-    Mat output, fgMask;
-    //Mat ghost = imread("ghost.gif", -1);
+    Mat output;
+    Mat background;
+    Mat ghost_frame;
+
+    // open the video with ghost
+    VideoCapture ghost; // = VideoCapture("ghost.gif");
+    ghost.open("ghost.gif");
+    int frame_counter = 0;
+    int ghost_pos_x = 20;
+    int ghost_pos_y = 20;
+    bool ghost_down = true;
+    bool ghost_right = true;
 
 
     // create Background Subtractor objects
@@ -245,18 +255,58 @@ void Widget::displayBraveVid()
     while(video.isOpened())
     {
         video >> output;
+        video >> background;
 
         if(!output.empty())
         {
+            Mat background_;
+            flip(background, background_, 1);
+
+            // set the ghost gif to an infinity loop
+            if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT)){
+                frame_counter = 0;
+                ghost = VideoCapture("ghost.gif");
+            }
+            frame_counter++;
+            ghost >> ghost_frame;
+
+            // mask the ghost to remove the background
+            Mat gray_ghost;
+            cv::cvtColor(ghost_frame, gray_ghost, COLOR_BGR2GRAY);
+            double thresh = 254;
+            double maxValue = 255; //this is ignored but has to be set
+            Mat ghost_masked;
+            threshold(gray_ghost,ghost_masked, thresh, maxValue, THRESH_TOZERO_INV);
+
+            // update the position of the ghost
+            if(ghost_right){
+                ghost_pos_x = ghost_pos_x + 2;
+                if (ghost_pos_x > (background_.cols - ghost_frame.cols - 20)){
+                    ghost_right = false;
+                }
+            } else {
+                ghost_pos_x = ghost_pos_x - 2;
+                if (ghost_pos_x < 20){
+                    ghost_right = true;
+                }
+            }
+            if(ghost_down){
+                ghost_pos_y = ghost_pos_y + 1;
+                if (ghost_pos_y > (background_.rows - 1.8*ghost_frame.rows)){
+                    ghost_down = false;
+                }
+            } else {
+                ghost_pos_y = ghost_pos_y - 1;
+                if (ghost_pos_y < 20){
+                    ghost_down = true;
+                }
+            }
+
+            ghost_frame.copyTo(background_(cv::Rect(ghost_pos_x,ghost_pos_y,ghost_frame.cols, ghost_frame.rows)),ghost_masked);
+
             // flip video
             Mat frame;
             flip(output, frame, 1);
-
-            // background substraction, doesn't work
-            //update the background model
-            //pBackSub->apply(frame, fgMask);
-
-            //imshow("FG Mask", fgMask);
 
             cv::Mat blank(frame.size(),CV_8U,cv::Scalar(0xFF));
             cv::Mat dest;
@@ -289,9 +339,7 @@ void Widget::displayBraveVid()
             dest.convertTo(dest,CV_8U);
 
             Mat frame2;
-
-            // copy source, destination, mask
-            //copyTo(frame2,frame,fgMask);
+            dest.copyTo(background_(cv::Rect(0,0,dest.cols, dest.rows)),dest);
 
             /*
              * 3 layers
@@ -302,10 +350,10 @@ void Widget::displayBraveVid()
 
 
             // convert Mat to QImage and show
-            QImage qimg(dest.data,
-                        dest.cols,
-                        dest.rows,
-                        dest.step,
+            QImage qimg(background_.data,
+                        background_.cols,
+                        background_.rows,
+                        background_.step,
                         QImage::Format_RGB888);
             pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
             ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
