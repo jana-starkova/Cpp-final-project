@@ -36,8 +36,7 @@ add_executable(${PROJECT_NAME}
     src/widget.ui
     src/camera.cpp
     src/camera.h
-    src/facedetector.cpp
-    src/facedetector.h
+    src/watershedsegmenter.h
     )
 
 qt5_use_modules(${PROJECT_NAME} multimedia multimediawidgets)
@@ -67,9 +66,13 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE  FACE_DETECTION_WEIGHTS="${FA
 # Copy necessary files
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/butterflies.png
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/butterflies.gif
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/ghost.gif
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/spider-demo.gif
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/spider.gif
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/res/kid-face.png
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

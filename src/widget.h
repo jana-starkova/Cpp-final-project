@@ -29,6 +29,11 @@ public:
     void displayScaredVid();
     void displayMidVid();
     void displayBraveVid();
+    Mat thresholdGif(Mat frame);
+    void updatePosition(int& x_pos, int& y_pos,
+                        bool& right, bool& down,
+                        int x_speed, int y_speed,
+                        Mat frame, Mat gif_frame);
 
 protected:
     void closeEvent(QCloseEvent *event);

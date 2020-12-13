@@ -1,46 +1,15 @@
 #include "widget.h"
 #include "ui_widget.h"
+#include "watershedsegmenter.h"
 
 #include <QVideoWidget>
-#include <unistd.h>
-#include <iostream>
-#include <vector>
 #include <opencv2/opencv.hpp>
 
-#include "opencv2/imgproc.hpp"
-#include "opencv2/videoio.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/video/background_segm.hpp"
-#include <stdio.h>
-#include <string>
-#include <QMediaPlaylist>
-#include <QMediaPlayer>
 
-
-using namespace cv;
-using namespace std;
-CascadeClassifier face_cascade;
-CascadeClassifier eyes_cascade;
-int radius = 0;
-
-
-class WatershedSegmenter{
-private:
-    cv::Mat markers;
-public:
-    void setMarkers(cv::Mat& markerImage)
-    {
-        markerImage.convertTo(markers, CV_32S);
-    }
-
-    cv::Mat process(cv::Mat &image)
-    {
-        cv::watershed(image, markers);
-        markers.convertTo(markers,CV_8U);
-        return markers;
-    }
-};
-
+/**
+ * @brief Widget constructor
+ * @param parent
+ */
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget),
@@ -50,41 +19,53 @@ Widget::Widget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // TODO: is this okay?
-    //Camera *camera = new Camera(this);
-    /*
-    m_camera = new Camera(this);
-    m_camera->setViewfinder(ui->cameraView);
-    m_camera->start();*/
-
     ui->graphicsView->setScene(new QGraphicsScene(this));
     ui->graphicsView->scene()->addItem(&pixmap);
 }
 
+
+/**
+ * @brief Widget destructor
+ */
 Widget::~Widget()
 {
     delete ui;
 }
 
+
+/**
+ * @brief sets the value of m_btnScared
+ * @param checked (bool)
+ */
 void Widget::on_btnScared_toggled(bool checked)
 {
     m_btnScared = checked;
 }
 
+
+/**
+ * @brief sets the value of m_btnMid
+ * @param checked (bool)
+ */
 void Widget::on_btnMid_toggled(bool checked)
 {
     m_btnMid = checked;
 }
 
+
+/**
+ * @brief sets the value of m_btnBrave
+ * @param checked (bool)
+ */
 void Widget::on_btnBrave_toggled(bool checked)
 {
     m_btnBrave = checked;
 }
 
+
 /**
- * This function shows the video for very scared users.
- * The output - spiders walking on the user.
- *
+ * @brief Shows camera output for a scared user
+ * Adds flying butterflies to the foreground of the camera output
  */
 void Widget::displayScaredVid()
 {
@@ -94,34 +75,46 @@ void Widget::displayScaredVid()
         return;
 
     Mat output;
-    Mat butterflies = imread("butterflies.png", -1);
+    Mat butterflies_frame;
 
-    // remove the image background
-    Mat mask;
-    std::vector<Mat> rgbLayer;
+    // open the butterflies gif
+    VideoCapture butterflies;
+    butterflies.open("butterflies.gif");
 
-    if(butterflies.channels() == 4)
-    {
-        split(butterflies,rgbLayer);         // seperate channels
-        Mat cs[3] = { rgbLayer[0],rgbLayer[1],rgbLayer[2] };
-        merge(cs,3,butterflies);  // put them together again
-        mask = rgbLayer[3];       // alpha channel used as mask
-    }
-
+    // count frames of the butterflies gif
+    int frame_counter;
 
     while(video.isOpened())
     {
+        // stream the webcam output to a Mat
         video >> output;
 
         if(!output.empty())
         {
-            // mirror the camera output
+            // set the gif to an infinity loop
+            if (frame_counter == butterflies.get(CAP_PROP_FRAME_COUNT)){
+                frame_counter = 0;
+                butterflies = VideoCapture("spider.gif");
+            }
+            frame_counter++;
+
+            // stream the butterflies gif to a Mat
+            butterflies >> butterflies_frame;
+
+            // mirror the webcam output
             Mat frame;
             flip(output, frame, 1);
 
-            // copy the image on top of the frame
-            butterflies.copyTo(frame(cv::Rect(0,0,butterflies.cols, butterflies.rows)),mask);
+            // resize the current frame of the butterflies gif
+            cv::resize(butterflies_frame, butterflies_frame, cv::Size(output.cols, output.rows), 0, 0);
 
+            // create a threshold mask of the current frame
+            Mat butterflies_masked = thresholdGif(butterflies_frame);
+
+            // copy the image on top of the webcam frame
+            butterflies_frame.copyTo(frame(cv::Rect(0,0,butterflies_frame.cols, butterflies_frame.rows)), butterflies_masked);
+
+            // convert Mat to QImage and show
             QImage qimg(frame.data,
                         frame.cols,
                         frame.rows,
@@ -133,93 +126,76 @@ void Widget::displayScaredVid()
         }
         qApp->processEvents();
     }
-
 }
 
-// put spiders on face
+
+/**
+ * @brief Shows camera output for undecisive user
+ * Puts a walking spider on the users face
+ */
 void Widget::displayMidVid()
 {
-
     if(!video.open(0))
         return;
 
     Mat output;
-    Mat ghost_frame;
+    Mat spider_frame;
 
-    // open the video with ghost
-    VideoCapture ghost; // = VideoCapture("ghost.gif");
-    ghost.open("spider.gif");
+    // open the spider gif
+    VideoCapture spider;
+    spider.open("spider.gif");
+
     int frame_counter = 0;
-    bool going_right = true;
 
-    int ghost_pos_x = 20;
-    int ghost_pos_y = 20;
-    bool ghost_down = true;
-    bool ghost_right = true;
+    int spider_pos_x = 20;
+    int spider_pos_y = 20;
+    bool spider_down = true;
+    bool spider_right = true;
 
-
+    // loop the camera
     while(video.isOpened())
     {
+        // stream the webcam output to a Mat
         video >> output;
 
         if(!output.empty())
         {
-            // set the ghost gif to an infinity loop
-            if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT)){
+            // set the gif to an infinity loop
+            if (frame_counter == spider.get(CAP_PROP_FRAME_COUNT)){
                 frame_counter = 0;
-                ghost = VideoCapture("spider.gif");
-                going_right = !going_right;
+                spider = VideoCapture("spider.gif");
+                spider_right = !spider_right;
             }
             frame_counter++;
-            ghost >> ghost_frame;
 
-            if (!going_right)
+            // stream the spider gif to a Mat
+            spider >> spider_frame;
+
+            // flip the current frame of the spider
+            // depends on the previous direction
+            if (!spider_right)
             {
                 Mat flipped;
-                flip(ghost_frame, flipped, 1);
-                ghost_frame = flipped;
+                flip(spider_frame, flipped, 1);
+                spider_frame = flipped;
             }
 
-            // mask the ghost to remove the background
-            Mat gray_ghost;
-            cv::cvtColor(ghost_frame, gray_ghost, COLOR_BGR2GRAY);
-            double thresh = 180;
-            double maxValue = 255; //this is ignored but has to be set
-            Mat ghost_masked;
-            threshold(gray_ghost,ghost_masked, thresh, maxValue, THRESH_TOZERO_INV);
+            // create a threshold mask of the gif current frame
+            Mat spider_masked = thresholdGif(spider_frame);
 
             // flip video
             Mat frame;
             flip(output, frame, 1);
 
-            // update the position of the ghost
-            if(ghost_right){
-                ghost_pos_x = ghost_pos_x + 1;
-                if (ghost_pos_x > (frame.cols - ghost_frame.cols - 20)){
-                    ghost_right = false;
-                }
-            } else {
-                ghost_pos_x = ghost_pos_x - 1;
-                if (ghost_pos_x < 20){
-                    ghost_right = true;
-                }
-            }
-            if(ghost_down){
-                ghost_pos_y = ghost_pos_y + 1;
-                if (ghost_pos_y > (frame.rows - 1.8*ghost_frame.rows)){
-                    ghost_down = false;
-                }
-            } else {
-                ghost_pos_y = ghost_pos_y - 1;
-                if (ghost_pos_y < 20){
-                    ghost_down = true;
-                }
-            }
+            // update the position of the spider
+            updatePosition(spider_pos_x, spider_pos_y,
+                           spider_right, spider_down,
+                           1, 1, frame, spider_frame);
 
+            // copy the spider to the webcam frame
+            spider_frame.copyTo(frame(cv::Rect(spider_pos_x,spider_pos_y,spider_frame.cols, spider_frame.rows)),spider_masked);
 
-            ghost_frame.copyTo(frame(cv::Rect(ghost_pos_x,ghost_pos_y,ghost_frame.cols, ghost_frame.rows)),ghost_masked);
-
-
+            // convert Mat to QImage and show
             QImage qimg(frame.data,
                         frame.cols,
                         frame.rows,
@@ -233,13 +209,15 @@ void Widget::displayMidVid()
         }
         qApp->processEvents();
     }
-
 }
 
-// place ghost in the background
-// OPTIONAL: play creepy music
-// foreground substraction inspired by https://docs.opencv.org/3.4/d1/dc5/tutorial_background_subtraction.html
 
+/**
+ * @brief Shows camera output for brave users
+ * Segments the user using Watershed Segmenter and places
+ * a ghost in the background
+ * 3 layers - background, ghost, user (top)
+ */
 void Widget::displayBraveVid()
 {
     using namespace cv;
@@ -252,9 +230,10 @@ void Widget::displayBraveVid()
     Mat ghost_frame;
 
     // open the video with ghost
-    VideoCapture ghost; // = VideoCapture("ghost.gif");
+    VideoCapture ghost;
     ghost.open("ghost.gif");
     int frame_counter = 0;
+
     int ghost_pos_x = 20;
     int ghost_pos_y = 20;
     bool ghost_down = true;
@@ -262,77 +241,51 @@ void Widget::displayBraveVid()
 
     int global_frame_counter = 0;
 
-    // create Background Subtractor objects
-    //Ptr<BackgroundSubtractor> pBackSub;
-    //pBackSub = createBackgroundSubtractorMOG2(5, 0.01);
-    //pBackSub = createBackgroundSubtractorKNN(10, 1);
-
     while(video.isOpened())
     {
+        // stream the webcam output to Mats
+        // one holds the background, one holds the segmented person
         video >> output;
         video >> background;
 
         if(!output.empty())
         {
+            // flip the webcam outputs
             Mat background_;
             flip(background, background_, 1);
 
-            // set the ghost gif to an infinity loop
+            Mat frame;
+            flip(output, frame, 1);
+
+            // set the gif to an infinity loop
             if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT)){
                 frame_counter = 0;
                 ghost = VideoCapture("ghost.gif");
             }
             frame_counter++;
+
+            // stream the ghost gif to a Mat
             ghost >> ghost_frame;
 
             // mask the ghost to remove the background
-            Mat gray_ghost;
-            cv::cvtColor(ghost_frame, gray_ghost, COLOR_BGR2GRAY);
-            double thresh = 254;
-            double maxValue = 255; //this is ignored but has to be set
-            Mat ghost_masked;
-            threshold(gray_ghost,ghost_masked, thresh, maxValue, THRESH_TOZERO_INV);
+            Mat ghost_masked = thresholdGif(ghost_frame);
 
             // update the position of the ghost
-            if(ghost_right){
-                ghost_pos_x = ghost_pos_x + 3;
-                if (ghost_pos_x > (background_.cols - ghost_frame.cols - 20)){
-                    ghost_right = false;
-                }
-            } else {
-                ghost_pos_x = ghost_pos_x - 3;
-                if (ghost_pos_x < 20){
-                    ghost_right = true;
-                }
-            }
-            if(ghost_down){
-                ghost_pos_y = ghost_pos_y + 1;
-                if (ghost_pos_y > (background_.rows - 1.8*ghost_frame.rows)){
-                    ghost_down = false;
-                }
-            } else {
-                ghost_pos_y = ghost_pos_y - 1;
-                if (ghost_pos_y < 20){
-                    ghost_down = true;
-                }
-            }
+            updatePosition(ghost_pos_x, ghost_pos_y,
+                           ghost_right, ghost_down,
+                           3, 1, background_, ghost_frame);
 
-            // appear ghost
+            // appear ghost after the spooky blinks
             if (global_frame_counter > 40)
             {
                 ghost_frame.copyTo(background_(cv::Rect(ghost_pos_x,ghost_pos_y,ghost_frame.cols, ghost_frame.rows)),ghost_masked);
-
             }
 
-
-            // flip video
-            Mat frame;
-            flip(output, frame, 1);
-
+            // watershed segmenter
             cv::Mat blank(frame.size(),CV_8U,cv::Scalar(0xFF));
             cv::Mat dest;
 
-            // Create markers image
+            // create markers image
             cv::Mat markers(frame.size(),CV_8U,cv::Scalar(-1));
 
             //top rectangle
@@ -349,7 +302,7 @@ void Widget::displayBraveVid()
             markers(Rect((frame.cols/2)-(centreW/2),(frame.rows/2)-(centreH/2), centreW, centreH)) = Scalar::all(2);
             markers.convertTo(markers, COLOR_BGRA2GRAY);
 
-            //Create watershed segmentation object and mask the frame
+            // create watershed segmentation object and mask the frame
             WatershedSegmenter segmenter;
             segmenter.setMarkers(markers);
             cv::Mat wshedMask = segmenter.process(frame);
@@ -359,9 +312,9 @@ void Widget::displayBraveVid()
             bitwise_and(frame, frame, dest, mask);
             dest.convertTo(dest,CV_8U);
 
-            Mat frame2;
             dest.copyTo(background_(cv::Rect(0,0,dest.cols, dest.rows)),dest);
 
+            // spooky blinking of the screen
             if (global_frame_counter > 30 && global_frame_counter < 40)
             {
                 if (global_frame_counter % 3 == 0)
@@ -369,13 +322,6 @@ void Widget::displayBraveVid()
                 if (global_frame_counter % 5 == 0)
                     background_ = Scalar(255,255,255);
             }
-
-            /*
-             * 3 layers
-             * background: frame
-             * middle: ghosts
-             * top: dest
-             */
 
             // convert Mat to QImage and show
             QImage qimg(background_.data,
@@ -390,9 +336,67 @@ void Widget::displayBraveVid()
         }
         qApp->processEvents();
     }
-
 }
 
+
+/**
+ * @brief removes the background of a current gif frame
+ */
+Mat Widget::thresholdGif(Mat frame)
+{
+    Mat grayscale;
+    cv::cvtColor(frame, grayscale, COLOR_BGR2GRAY);
+    double thresh = 180;
+    double max_val = 255; //this is ignored but has to be set
+    Mat frame_masked;
+    threshold(grayscale,frame_masked, thresh, max_val, THRESH_TOZERO_INV);
+
+    return frame_masked;
+}
+
+/**
+ * @brief updates position of the current gif frame
+ * @param x_pos - int, x position
+ * @param y_pos - int, y position
+ * @param right - bool, is moving right
+ * @param down - bool, is moving down
+ * @param x_speed - int, horizontal speed
+ * @param y_speed - int, vertical speed
+ * @param frame - Mat, background frame
+ * @param gif_frame - Mat, gif frame
+ */
+void Widget::updatePosition(int& x_pos, int& y_pos,
+                            bool& right, bool& down,
+                            int x_speed, int y_speed,
+                            Mat frame, Mat gif_frame)
+{
+    if(right){
+        x_pos = x_pos + x_speed;
+        if (x_pos > (frame.cols - gif_frame.cols - 20)){
+            right = false;
+        }
+    } else {
+        x_pos = x_pos - x_speed;
+        if (x_pos < 20){
+            right = true;
+        }
+    }
+    if(down){
+        y_pos = y_pos + y_speed;
+        if (y_pos > (frame.rows - 1.8*gif_frame.rows)){
+            down = false;
+        }
+    } else {
+        y_pos = y_pos - y_speed;
+        if (y_pos < 20){
+            down = true;
+        }
+    }
+}
+
+/**
+ * @brief Open camera with user-preferred effects
+ */
 void Widget::on_pushButton_clicked()
 {
     if(m_btnScared){
@@ -411,9 +415,10 @@ void Widget::on_pushButton_clicked()
 
 
 /**
- * Show pop up window when closing the widget
+ * @brief Shows pop up window when closing the widget
  * @param *event - closing event of the widget
  */
+
 void Widget::closeEvent(QCloseEvent *event)
 {
     QMessageBox msgBox;
