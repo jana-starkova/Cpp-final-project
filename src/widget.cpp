@@ -5,6 +5,7 @@
 #include <QVideoWidget>
 #include <opencv2/opencv.hpp>
 
+using namespace cv;
 
 /**
  * @brief Widget constructor
@@ -69,7 +70,6 @@ void Widget::on_btnBrave_toggled(bool checked)
  */
 void Widget::displayScaredVid()
 {
-    using namespace cv;
 
     if(!video.open(0))
         return;
@@ -94,7 +94,7 @@ void Widget::displayScaredVid()
             // set the gif to an infinity loop
             if (frame_counter == butterflies.get(CAP_PROP_FRAME_COUNT)){
                 frame_counter = 0;
-                butterflies = VideoCapture("spider.gif");
+                butterflies = VideoCapture("butterflies.gif");
             }
             frame_counter++;
 
@@ -220,8 +220,6 @@ void Widget::displayMidVid()
  */
 void Widget::displayBraveVid()
 {
-    using namespace cv;
-
     if(!video.open(0))
         return;
 
