@@ -5,10 +5,6 @@
 
 using namespace cv;
 
-/**
- * @brief Widget constructor
- * @param parent
- */
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget),
@@ -16,60 +12,43 @@ Widget::Widget(QWidget *parent) :
     m_btnMid{false},
     m_btnBrave{false}
 {
+    // setup the ui
     ui->setupUi(this);
-
     ui->graphicsView->setScene(new QGraphicsScene(this));
     ui->graphicsView->scene()->addItem(&m_pixmap);
 }
 
 
-/**
- * @brief Widget destructor
- */
 Widget::~Widget()
 {
     delete ui;
 }
 
 
-/**
- * @brief sets the value of m_btnScared
- * @param checked (bool)
- */
-void Widget::on_btnScared_toggled(bool checked)
+void Widget::on_btnScared_toggled(const bool checked)
 {
     m_btnScared = checked;
 }
 
 
-/**
- * @brief sets the value of m_btnMid
- * @param checked (bool)
- */
-void Widget::on_btnMid_toggled(bool checked)
+void Widget::on_btnMid_toggled(const bool checked)
 {
     m_btnMid = checked;
 }
 
 
-/**
- * @brief sets the value of m_btnBrave
- * @param checked (bool)
- */
-void Widget::on_btnBrave_toggled(bool checked)
+void Widget::on_btnBrave_toggled(const bool checked)
 {
     m_btnBrave = checked;
 }
 
 
-/**
- * @brief Shows camera output for a scared user
- * Adds flying butterflies to the foreground of the camera output
- */
 void Widget::displayScaredVid()
 {
     if(!m_video.open(0))
+    {
         return;
+    }
 
     Mat output;
     Mat butterflies_frame;
@@ -89,11 +68,12 @@ void Widget::displayScaredVid()
         if(!output.empty())
         {
             // set the gif to an infinity loop
-            if (frame_counter == butterflies.get(CAP_PROP_FRAME_COUNT)){
+            if (frame_counter == butterflies.get(CAP_PROP_FRAME_COUNT))
+            {
                 frame_counter = 0;
                 butterflies = VideoCapture("butterflies.gif");
             }
-            frame_counter++;
+            ++frame_counter;
 
             // stream the butterflies gif to a Mat
             butterflies >> butterflies_frame;
@@ -126,14 +106,12 @@ void Widget::displayScaredVid()
 }
 
 
-/**
- * @brief Shows camera output for undecisive user
- * Puts a walking spider on the users face
- */
 void Widget::displayMidVid()
 {
     if(!m_video.open(0))
+    {
         return;
+    }
 
     Mat output;
     Mat spider_frame;
@@ -142,12 +120,12 @@ void Widget::displayMidVid()
     VideoCapture spider;
     spider.open("spider.gif");
 
-    int frame_counter = 0;
+    int frame_counter{0};
 
-    int spider_pos_x = 20;
-    int spider_pos_y = 20;
-    bool spider_down = true;
-    bool spider_right = true;
+    int spider_pos_x{20};
+    int spider_pos_y{20};
+    bool spider_down{true};
+    bool spider_right{true};
 
     // loop the camera
     while(m_video.isOpened())
@@ -158,7 +136,8 @@ void Widget::displayMidVid()
         if(!output.empty())
         {
             // set the gif to an infinity loop
-            if (frame_counter == spider.get(CAP_PROP_FRAME_COUNT)){
+            if (frame_counter == spider.get(CAP_PROP_FRAME_COUNT))
+            {
                 frame_counter = 0;
                 spider = VideoCapture("spider.gif");
                 spider_right = !spider_right;
@@ -199,9 +178,7 @@ void Widget::displayMidVid()
                         frame.step,
                         QImage::Format_RGB888);
 
-
             m_pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
-
             ui->graphicsView->fitInView(&m_pixmap, Qt::KeepAspectRatio);
         }
         qApp->processEvents();
@@ -209,16 +186,12 @@ void Widget::displayMidVid()
 }
 
 
-/**
- * @brief Shows camera output for brave users
- * Segments the user using Watershed Segmenter and places
- * a ghost in the background
- * 3 layers - background, ghost, user (top)
- */
 void Widget::displayBraveVid()
 {
     if(!m_video.open(0))
+    {
         return;
+    }
 
     Mat output;
     Mat background;
@@ -227,14 +200,14 @@ void Widget::displayBraveVid()
     // open the video with ghost
     VideoCapture ghost;
     ghost.open("ghost.gif");
-    int frame_counter = 0;
+    int frame_counter{0};
 
-    int ghost_pos_x = 20;
-    int ghost_pos_y = 20;
-    bool ghost_down = true;
-    bool ghost_right = true;
+    int ghost_pos_x{20};
+    int ghost_pos_y{20};
+    bool ghost_down{true};
+    bool ghost_right{true};
 
-    int global_frame_counter = 0;
+    int global_frame_counter{0};
 
     while(m_video.isOpened())
     {
@@ -253,7 +226,8 @@ void Widget::displayBraveVid()
             flip(output, frame, 1);
 
             // set the gif to an infinity loop
-            if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT)){
+            if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT))
+            {
                 frame_counter = 0;
                 ghost = VideoCapture("ghost.gif");
             }
@@ -334,10 +308,7 @@ void Widget::displayBraveVid()
 }
 
 
-/**
- * @brief removes the background of a current gif frame
- */
-Mat Widget::thresholdGif(Mat frame)
+Mat Widget::thresholdGif(const Mat frame)
 {
     Mat grayscale;
     cv::cvtColor(frame, grayscale, COLOR_BGR2GRAY);
@@ -349,21 +320,11 @@ Mat Widget::thresholdGif(Mat frame)
     return frame_masked;
 }
 
-/**
- * @brief updates position of the current gif frame
- * @param x_pos - int, x position
- * @param y_pos - int, y position
- * @param right - bool, is moving right
- * @param down - bool, is moving down
- * @param x_speed - int, horizontal speed
- * @param y_speed - int, vertical speed
- * @param frame - Mat, background frame
- * @param gif_frame - Mat, gif frame
- */
+
 void Widget::updatePosition(int& x_pos, int& y_pos,
                             bool& right, bool& down,
-                            int x_speed, int y_speed,
-                            Mat frame, Mat gif_frame)
+                            const int x_speed, const int y_speed,
+                            const Mat frame, const Mat gif_frame)
 {
     if(right){
         x_pos = x_pos + x_speed;
@@ -389,30 +350,30 @@ void Widget::updatePosition(int& x_pos, int& y_pos,
     }
 }
 
-/**
- * @brief Open camera with user-preferred effects
- */
+
 void Widget::on_pushButton_clicked()
 {
-    if(m_btnScared){
+    if(m_btnScared)
+    {
         ui->selectCheck->setText("You're a chicken");
         displayScaredVid();
-    } else if (m_btnMid){
+    }
+    else if (m_btnMid)
+    {
         ui->selectCheck->setText("And who should know?");
         displayMidVid();
-    } else if (m_btnBrave){
+    }
+    else if (m_btnBrave)
+    {
         ui->selectCheck->setText("A hero! Let's play!");
         displayBraveVid();
-    } else {
+    }
+    else
+    {
         ui->selectCheck->setText("Please choose an option");
     }
 }
 
-
-/**
- * @brief Shows pop up window when closing the widget
- * @param *event - closing event of the widget
- */
 
 void Widget::closeEvent(QCloseEvent *event)
 {
