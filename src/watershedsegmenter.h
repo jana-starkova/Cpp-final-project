@@ -5,18 +5,18 @@
 
 class WatershedSegmenter{
 private:
-    cv::Mat markers;
+    cv::Mat m_markers;
 public:
     void setMarkers(cv::Mat& markerImage)
     {
-        markerImage.convertTo(markers, CV_32S);
+        markerImage.convertTo(m_markers, CV_32S);
     }
 
     cv::Mat process(cv::Mat &image)
     {
-        cv::watershed(image, markers);
-        markers.convertTo(markers,CV_8U);
-        return markers;
+        cv::watershed(image, m_markers);
+        m_markers.convertTo(m_markers,CV_8U);
+        return m_markers;
     }
 };
 
