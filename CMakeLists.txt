@@ -34,8 +34,6 @@ add_executable(${PROJECT_NAME}
     src/widget.cpp
     src/widget.h
     src/widget.ui
-    src/camera.cpp
-    src/camera.h
     src/watershedsegmenter.h
     )
 

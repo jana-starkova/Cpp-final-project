@@ -1,12 +1,5 @@
-#include <iostream>
 #include "widget.h"
-#include "opencv2/opencv.hpp"
 #include <QApplication>
-#include <QtMultimedia/QMediaPlaylist>
-#include <QtMultimedia/QMediaPlayer>
-#include <QVideoWidget>
-#include <QtMultimedia/QCamera>
-#include <QMainWindow>
 
 using namespace cv;
 

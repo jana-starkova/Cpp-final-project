@@ -6,12 +6,7 @@
 #include "opencv2/opencv.hpp"
 #include <QMessageBox>
 #include <QCloseEvent>
-#include "facedetector.h"
 
-#include "opencv2/objdetect.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
 
 using namespace cv;
 
@@ -47,8 +42,8 @@ private slots:
 
 private:
     Ui::Widget *ui;
-    QGraphicsPixmapItem pixmap;
-    cv::VideoCapture video;
+    QGraphicsPixmapItem m_pixmap;
+    cv::VideoCapture m_video;
 
     bool m_btnScared;
     bool m_btnMid;

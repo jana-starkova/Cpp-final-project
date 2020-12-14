@@ -1,8 +1,6 @@
 #include "widget.h"
 #include "ui_widget.h"
 #include "watershedsegmenter.h"
-
-#include <QVideoWidget>
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
@@ -21,7 +19,7 @@ Widget::Widget(QWidget *parent) :
     ui->setupUi(this);
 
     ui->graphicsView->setScene(new QGraphicsScene(this));
-    ui->graphicsView->scene()->addItem(&pixmap);
+    ui->graphicsView->scene()->addItem(&m_pixmap);
 }
 
 
@@ -70,8 +68,7 @@ void Widget::on_btnBrave_toggled(bool checked)
  */
 void Widget::displayScaredVid()
 {
-
-    if(!video.open(0))
+    if(!m_video.open(0))
         return;
 
     Mat output;
@@ -84,10 +81,10 @@ void Widget::displayScaredVid()
     // count frames of the butterflies gif
     int frame_counter;
 
-    while(video.isOpened())
+    while(m_video.isOpened())
     {
         // stream the webcam output to a Mat
-        video >> output;
+        m_video >> output;
 
         if(!output.empty())
         {
@@ -121,8 +118,8 @@ void Widget::displayScaredVid()
                         frame.step,
                         QImage::Format_RGB888);
 
-            pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
-            ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
+            m_pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
+            ui->graphicsView->fitInView(&m_pixmap, Qt::KeepAspectRatio);
         }
         qApp->processEvents();
     }
@@ -135,7 +132,7 @@ void Widget::displayScaredVid()
  */
 void Widget::displayMidVid()
 {
-    if(!video.open(0))
+    if(!m_video.open(0))
         return;
 
     Mat output;
@@ -153,10 +150,10 @@ void Widget::displayMidVid()
     bool spider_right = true;
 
     // loop the camera
-    while(video.isOpened())
+    while(m_video.isOpened())
     {
         // stream the webcam output to a Mat
-        video >> output;
+        m_video >> output;
 
         if(!output.empty())
         {
@@ -166,7 +163,7 @@ void Widget::displayMidVid()
                 spider = VideoCapture("spider.gif");
                 spider_right = !spider_right;
             }
-            frame_counter++;
+            ++frame_counter;
 
             // stream the spider gif to a Mat
             spider >> spider_frame;
@@ -203,9 +200,9 @@ void Widget::displayMidVid()
                         QImage::Format_RGB888);
 
 
-            pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
+            m_pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
 
-            ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
+            ui->graphicsView->fitInView(&m_pixmap, Qt::KeepAspectRatio);
         }
         qApp->processEvents();
     }
@@ -220,7 +217,7 @@ void Widget::displayMidVid()
  */
 void Widget::displayBraveVid()
 {
-    if(!video.open(0))
+    if(!m_video.open(0))
         return;
 
     Mat output;
@@ -239,12 +236,12 @@ void Widget::displayBraveVid()
 
     int global_frame_counter = 0;
 
-    while(video.isOpened())
+    while(m_video.isOpened())
     {
         // stream the webcam output to Mats
         // one holds the background, one holds the segmented person
-        video >> output;
-        video >> background;
+        m_video >> output;
+        m_video >> background;
 
         if(!output.empty())
         {
@@ -260,7 +257,7 @@ void Widget::displayBraveVid()
                 frame_counter = 0;
                 ghost = VideoCapture("ghost.gif");
             }
-            frame_counter++;
+            ++frame_counter;
 
             // stream the ghost gif to a Mat
             ghost >> ghost_frame;
@@ -327,10 +324,10 @@ void Widget::displayBraveVid()
                         background_.rows,
                         background_.step,
                         QImage::Format_RGB888);
-            pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
-            ui->graphicsView->fitInView(&pixmap, Qt::KeepAspectRatio);
+            m_pixmap.setPixmap( QPixmap::fromImage(qimg.rgbSwapped()) );
+            ui->graphicsView->fitInView(&m_pixmap, Qt::KeepAspectRatio);
 
-            global_frame_counter++;
+            ++global_frame_counter;
         }
         qApp->processEvents();
     }
@@ -423,11 +420,11 @@ void Widget::closeEvent(QCloseEvent *event)
     msgBox.setText("Bye now!");
     msgBox.setStyleSheet("QLabel{min-width:250 px};");
 
-    if(video.isOpened())
+    if(m_video.isOpened())
     {
         msgBox.setInformativeText("Hope you had fun,  see you soon!");
         msgBox.exec();
-        video.release();
+        m_video.release();
         event->accept();
     }
     else
