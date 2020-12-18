@@ -10,7 +10,9 @@ My app opens the user's camera and draws some "scary stuff" around. It's basical
 You have been warned...
 
 
-*app preview*
+*App preview*
+![App screenshot - spider](res/spider-screenshot.png?raw=true "Spider")
+![App screenshot - ghost](res/ghost-screenshot.png?raw=true "Ghost")
 
 
 <b>Challenges and learning points</b>
