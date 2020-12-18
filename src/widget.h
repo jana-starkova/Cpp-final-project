@@ -7,7 +7,6 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 
-
 using namespace cv;
 
 namespace Ui {

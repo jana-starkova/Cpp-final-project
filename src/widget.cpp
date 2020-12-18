@@ -71,7 +71,8 @@ void Widget::displayScaredVid()
             if (frame_counter == butterflies.get(CAP_PROP_FRAME_COUNT))
             {
                 frame_counter = 0;
-                butterflies = VideoCapture("butterflies.gif");
+                //butterflies = VideoCapture("butterflies.gif");
+                butterflies.open("butterflies.gif");
             }
             ++frame_counter;
 
@@ -139,7 +140,8 @@ void Widget::displayMidVid()
             if (frame_counter == spider.get(CAP_PROP_FRAME_COUNT))
             {
                 frame_counter = 0;
-                spider = VideoCapture("spider.gif");
+                //spider = VideoCapture("spider.gif");
+                spider.open("spider.gif");
                 spider_right = !spider_right;
             }
             ++frame_counter;
@@ -229,7 +231,8 @@ void Widget::displayBraveVid()
             if (frame_counter == ghost.get(CAP_PROP_FRAME_COUNT))
             {
                 frame_counter = 0;
-                ghost = VideoCapture("ghost.gif");
+                //ghost = VideoCapture("ghost.gif");
+                ghost.open("ghost.gif");
             }
             ++frame_counter;
 
@@ -242,7 +245,7 @@ void Widget::displayBraveVid()
             // update the position of the ghost
             updatePosition(ghost_pos_x, ghost_pos_y,
                            ghost_right, ghost_down,
-                           3, 1, background_, ghost_frame);
+                           5, 1, background_, ghost_frame);
 
             // appear ghost after the spooky blinks
             if (global_frame_counter > 40)
@@ -257,10 +260,6 @@ void Widget::displayBraveVid()
             // create markers image
             cv::Mat markers(frame.size(),CV_8U,cv::Scalar(-1));
 
-            //top rectangle
-            //markers(Rect(0,0,frame.cols, 5)) = Scalar::all(1);
-            //bottom rectangle
-            //markers(Rect(0,frame.rows-5,frame.cols, 5)) = Scalar::all(1);
             //left rectangle
             markers(Rect(0,0,5,frame.rows)) = Scalar::all(1);
             //right rectangle
