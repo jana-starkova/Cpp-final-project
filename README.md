@@ -19,6 +19,5 @@ You have been warned...
 - working with OpenCV - displaying the webcam output in my custom widget, not just OpenCV default imshow window
 - user segmentation which would allow placing the ghost in the background - tried Haar cascades, HOG descriptor, Watershed segmenter
 - not scaring myself with too creepy ghosts
-- dealing with the fact that SW development is not a linear process and the amount of time you put in does not always equal the amount of cool working features you get
+- SW development is not a linear process and the amount of time you put in does not always equal the amount of cool working features you get
 - you often try many different approaches only to end up going back to the very first thing you tried many many hours ago
-- no one cares about all the code you wrote if it does not work
